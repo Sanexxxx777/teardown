@@ -1,0 +1,14 @@
+{
+  "name": "teardown",
+  "owner": {
+    "name": "Aleksandr Shulgin",
+    "url": "https://github.com/Sanexxxx777"
+  },
+  "plugins": [
+    {
+      "name": "teardown",
+      "source": "./",
+      "description": "Take apart someone else's repository and say what it actually is."
+    }
+  ]
+}

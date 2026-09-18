@@ -1,0 +1,11 @@
+{
+  "name": "teardown",
+  "description": "Take apart someone else's repository and say what it actually is: a prompt you could rewrite in an afternoon, or a platform you would be maintaining.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Aleksandr Shulgin",
+    "url": "https://github.com/Sanexxxx777"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/Sanexxxx777/teardown"
+}
