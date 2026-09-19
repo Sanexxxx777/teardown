@@ -102,6 +102,9 @@ python3 skills/teardown/scripts/weigh.py /tmp/repo --json
 
 It reports the code/prose split, which files carry the weight, what the repo
 shells out to, declared dependencies, and which agent ecosystems it targets.
+Generated code is counted apart from written code, and notebooks are counted in
+files rather than lines, because a .ipynb is source, prose and base64 output in
+one JSON and its line count means nothing.
 It counts lines and greps text. It does not execute anything from the repo.
 
 ## Two rules worth knowing before you use it

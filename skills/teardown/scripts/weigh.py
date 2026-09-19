@@ -25,6 +25,9 @@ CODE_EXT = {
     ".sh", ".bash", ".zsh", ".lua", ".ex", ".exs", ".scala", ".dart", ".vue", ".svelte",
 }
 PROSE_EXT = {".md", ".mdx", ".rst", ".txt", ".adoc"}
+# A notebook is JSON holding code, prose and base64 outputs at once. Counting
+# its lines lies in both directions, so it is counted in files, like an asset.
+NOTEBOOK_EXT = {".ipynb"}
 CONFIG_EXT = {".json", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".xml", ".env"}
 STYLE_EXT = {".css", ".scss", ".sass", ".less"}
 MARKUP_EXT = {".html", ".htm"}
@@ -42,6 +45,14 @@ SKIP_DIRS = {
     "vendor", "target", ".cache", "site-packages", ".mypy_cache", ".pytest_cache",
 }
 TEST_HINT = re.compile(r"(^|/)(tests?|__tests__|spec|e2e)(/|$)|(\.|_|-)(test|spec)\.", re.I)
+# Generated code is real code that nobody wrote. Counting it as authorship makes a
+# thin SDK wrapper look like a platform: one repo here carried a single 136,000-line
+# zz_generated.gen.go and read as 2M lines of engineering.
+GENERATED_HINT = re.compile(
+    r"(^|/)(generated|gen|__generated__|autogen|swagger|openapi)(/|$)"
+    r"|(^|/)zz_generated|\.gen\.(go|ts|py|rs)$|\.pb\.(go|py|cc|h)$"
+    r"|_pb2(_grpc)?\.py$|\.g\.dart$|\.designer\.cs$",
+    re.I)
 
 # What a repo hands off to somebody else. This is the tell that separates
 # "a platform" from "a wrapper with good taste".
@@ -90,6 +101,8 @@ def classify(path: Path, root: Path) -> str:
     ext = path.suffix.lower()
     if name in LOCK_NAMES:
         return "lock"
+    if ext in NOTEBOOK_EXT:
+        return "notebook"
     if ext in ASSET_EXT:
         return "asset"
     if ext in PROSE_EXT:
@@ -101,7 +114,10 @@ def classify(path: Path, root: Path) -> str:
     if ext in MARKUP_EXT:
         return "markup"
     if ext in CODE_EXT:
-        return "test" if TEST_HINT.search(str(path.relative_to(root))) else "code"
+        rel = str(path.relative_to(root))
+        if TEST_HINT.search(rel):
+            return "test"
+        return "generated" if GENERATED_HINT.search(rel) else "code"
     return "other"
 
 
@@ -181,7 +197,7 @@ def weigh(root: Path) -> dict:
     for path in iter_files(root):
         kind = classify(path, root)
         files[kind] += 1
-        if kind in {"asset", "lock"}:
+        if kind in {"asset", "lock", "notebook"}:
             continue
         n = count_lines(path)
         lines[kind] += n
@@ -212,7 +228,10 @@ def render(report: dict) -> str:
         f"code         : {code} lines in {files.get('code', 0)} files",
         f"prose        : {prose} lines in {files.get('prose', 0)} files",
         f"tests        : {lines.get('test', 0)} lines in {files.get('test', 0)} files",
+        f"generated    : {lines.get('generated', 0)} lines in {files.get('generated', 0)} files"
+        " (code nobody wrote)",
         f"assets       : {files.get('asset', 0)} files (not counted in lines)",
+        f"notebooks    : {files.get('notebook', 0)} files (not counted in lines)",
         f"files total  : {total_files}",
     ]
     if code:

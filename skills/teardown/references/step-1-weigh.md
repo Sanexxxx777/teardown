@@ -24,6 +24,8 @@ neither do you.
 | `carries the weight` | where to start reading. The top file is the repo |
 | `markers` | which agent ecosystems it targets |
 | `tests` | a repo with no tests and a confident README is a repo with no tests |
+| `generated` | code nobody wrote. Subtract it before you judge the engineering |
+| `notebooks` | counted in files, not lines: a .ipynb is code, prose and base64 output in one JSON |
 
 **Weight classes:**
 
