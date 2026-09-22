@@ -57,7 +57,9 @@ A one-page teardown:
 
 ## Worked examples
 
-Two teardowns of trending repos, run with this skill:
+Two teardowns of trending repos, run with this skill. The star counts are from the
+day each teardown was written: brag has since doubled, archify has not moved much,
+and neither repository's code numbers changed at all. That gap is the point.
 
 - [`latent-spaces/brag`](examples/teardown-brag.md): 3,318 stars, ships zero lines
   of product code. Verdict STEAL.
