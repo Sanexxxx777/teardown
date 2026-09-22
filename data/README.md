@@ -38,15 +38,56 @@ product is the code and the README is marketing for it.
 The fix landed mid-sweep and moved no repository between classes, which is how you know
 it was about honesty rather than verdicts.
 
-`license_spdx` comes from the GitHub API at measurement time. `none` means no licence
-file at all, so the rights stay with the author. `NOASSERTION` means GitHub could not
-identify the file, which is not the same as permissive: one repository here carries the
-Fair Source License 1.0, which is not an open-source licence. 35 of the 138 have no
-licence you can rely on, and 9 more are AGPL or GPL. This column is a pointer to go and
-read the file, not legal advice.
+`license_spdx` is what the GitHub API reported. `license_family` is what the licence
+actually permits, and the two disagree more than you would expect.
+
+GitHub could not identify the licence of 19 of these repositories and returned
+`NOASSERTION`. Reading all 19 files:
+
+| What they turned out to be | Count |
+|---|---|
+| ordinary MIT or Apache under a modified header | 11 |
+| source-available, with use restrictions | 5 |
+| copyleft (AGPL) | 3 |
+
+So "unidentified" is not a synonym for "probably fine": 8 of the 19 cannot be taken from.
+Among them a Fair Source Agreement, the Elastic License 2.0, PolyForm Noncommercial, and
+the one worth remembering. **An MIT header with a no-commercial clause appended further
+down.** The first line says MIT. The file is not MIT. A licence scanner that reads only
+the first line, or trusts the API, reports that repository as permissive.
+
+Across all 138: 102 you can take code from, 14 copyleft, 5 source-available, 9 with no
+licence file at all (the author keeps all rights by default), 1 weak-copyleft, 7 not
+measured. `license_note` carries the reason where there is one. This is a pointer to go
+and read the file, not legal advice.
 
 `stars_at_measurement` is a snapshot and drifts. Treat it as evidence that promotion
 reached people, nothing else.
+
+## What did not survive measurement
+
+Five of these repositories were gone from GitHub within a day of being catalogued:
+miners, "free" builds of paid desktop software, resale of other people's subscriptions,
+proxy panels. They were flagged by eye first, from a three-part pattern: a fresh account,
+a name borrowing a famous product, and stars appearing faster than a repository can
+plausibly earn them. The removals suggest the judgement was sound, so the obvious next
+step was to mechanise the pattern. It does not mechanise. All three parts were tested
+against the repositories that are still up and the ones read in full:
+
+- **Stars per day: no separation.** 24 of 28 legitimate repositories grow faster than the
+  slowest flagged one. The fastest riser in the whole set, at 3,243 stars a day, is a
+  legitimate project from a known lab.
+- **Account age: separates backwards.** The flagged repositories come from *older*
+  accounts (median 2,340 days) than the legitimate ones (median 658). Several legitimate
+  projects sit under organisations created after the repository itself.
+- **A borrowed product name: 50% precision.** It fires on 12 of the 138 and is right
+  about half the time. Among the ones it accuses are `openai/codex` and
+  `deepseek-ai/deepseek-harness`, which are the products' actual owners.
+
+So there is no check to ship here, and none is shipped. What survives is narrower and
+worth stating plainly: removal is the only hard signal, it arrives a day late, and by
+then the repository is gone along with the evidence. None of the five removed ones has
+a star count in this dataset, because they were already 404 when the sweep reached them.
 
 ## Limits
 

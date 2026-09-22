@@ -75,8 +75,11 @@ script in this repo: 67 fork-class, 32 medium, 15 prompt-class, 9 small, 10 too 
 fetch, 5 already removed from GitHub.
 
 56 percent are platform-scale. 24 are light enough to rebuild in an evening, and half of
-those are not tools at all. 35 carry no licence you can rely on. Method, column meanings
-and the limits of the sweep are in [`data/README.md`](data/README.md).
+those are not tools at all. GitHub could not identify the licence of 19, and reading all
+19 files showed 8 of them restrict use, including an MIT header with a no-commercial
+clause appended further down. Method, column meanings and the limits of the sweep are in
+[`data/README.md`](data/README.md), including the three risk signals that were tested and
+did not survive.
 
 ## Install
 
@@ -111,7 +114,13 @@ python3 skills/teardown/scripts/weigh.py /tmp/repo
 python3 skills/teardown/scripts/weigh.py /tmp/repo --json
 ```
 
-It reports the code/prose split, which files carry the weight, what the repo
+The first line it prints is the licence, because that gate comes before weight:
+it reads the licence file rather than trusting the API, identifies the base
+licence before looking for clauses added on top, and marks anything you cannot
+simply take code from with `!!`. An MIT header with a no-commercial clause
+further down is reported as source-available, not as MIT.
+
+It then reports the code/prose split, which files carry the weight, what the repo
 shells out to, declared dependencies, and which agent ecosystems it targets.
 Generated code is counted apart from written code, and notebooks are counted in
 files rather than lines, because a .ipynb is source, prose and base64 output in

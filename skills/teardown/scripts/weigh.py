@@ -25,6 +25,55 @@ CODE_EXT = {
     ".sh", ".bash", ".zsh", ".lua", ".ex", ".exs", ".scala", ".dart", ".vue", ".svelte",
 }
 PROSE_EXT = {".md", ".mdx", ".rst", ".txt", ".adoc"}
+
+# --- licence -------------------------------------------------------------
+# Weight was the gate this script was built for. Measuring a month of a trending
+# feed moved licence in front of it: GitHub's API returned NOASSERTION for 19 of
+# 138 repos, and reading those files showed 8 of the 19 restrict use. One is an
+# MIT header with a no-commercial clause appended, which the API reports as
+# "Other" and a human reads as MIT.
+LICENCE_FILES = (
+    "LICENSE", "LICENCE", "COPYING", "LICENSE.md", "LICENCE.md", "COPYING.md",
+    "LICENSE.txt", "LICENCE.txt", "LICENSE-MIT", "LICENSE.rst",
+)
+# Ordered, most specific first: the first match is the base licence.
+LICENCE_BASE = (
+    ("fair source license", "source-available", "Fair Source: use limits now, open later"),
+    ("business source license", "source-available", "BUSL: no production use until the change date"),
+    ("elastic license 2.0", "source-available", "ELv2: may not be offered as a managed service"),
+    ("server side public license", "source-available", "SSPL: network use forces you to open your stack"),
+    ("polyform", "source-available", "PolyForm: named use limits"),
+    ("functional source license", "source-available", "FSL: use limits now, open later"),
+    ("attribution-noncommercial", "source-available", "CC BY-NC: no commercial use"),
+    # GPL family before any clause search: the AGPL text itself contains the
+    # word "noncommercially", and a naive clause search calls AGPL a custom
+    # non-commercial licence. That was a real false positive, not a hypothetical.
+    ("gnu affero general public", "copyleft", "AGPL: network use forces you to publish your source"),
+    ("gnu lesser general public", "copyleft", "LGPL: linking obligations"),
+    ("gnu general public", "copyleft", "GPL: derivative works stay GPL"),
+    ("mozilla public license", "weak-copyleft", "MPL: per-file copyleft"),
+    ("apache license", "permissive", "Apache-2.0"),
+    ("mit license", "permissive", "MIT"),
+    ("permission is hereby granted, free of charge", "permissive", "MIT-style grant"),
+    ("redistribution and use in source and binary forms", "permissive", "BSD-style"),
+    ("isc license", "permissive", "ISC"),
+    ("this is free and unencumbered software", "public-domain", "Unlicense"),
+    ("cc0 1.0", "public-domain", "CC0"),
+)
+# Clauses bolted on top of an otherwise permissive header. This is the case the
+# API hides best, and the one that costs you if you skim the first line.
+LICENCE_ADDED = (
+    ("commons clause", "Commons Clause: you may not sell it"),
+    ("non-commercial use only", "non-commercial use only"),
+    ("for non-commercial purposes only", "non-commercial use only"),
+    ("may not be used for commercial", "no commercial use"),
+    ("not for commercial use", "no commercial use"),
+    ("personal, non-commercial", "personal non-commercial use only"),
+    ("prior written permission", "written permission required for some uses"),
+)
+# Families you cannot simply take code from into a closed or differently
+# licensed project. Printed with a marker so it is not missed.
+LICENCE_BLOCKING = {"source-available", "copyleft", "none", "unknown"}
 # A notebook is JSON holding code, prose and base64 outputs at once. Counting
 # its lines lies in both directions, so it is counted in files, like an asset.
 NOTEBOOK_EXT = {".ipynb"}
@@ -190,6 +239,37 @@ def deps(root: Path) -> dict:
     return out
 
 
+def classify_licence(text: str) -> dict:
+    """Base licence first, then clauses added on top. A restriction bolted onto a
+    permissive header means the repo is not permissive, whatever its first line says."""
+    low = " ".join(text.lower().split())
+    family, meaning = "unknown", "no known licence text matched"
+    for needle, fam, mean in LICENCE_BASE:
+        if needle in low:
+            family, meaning = fam, mean
+            break
+    added = [note for needle, note in LICENCE_ADDED if needle in low]
+    if added and family in {"permissive", "public-domain", "unknown"}:
+        family = "source-available"
+    return {"family": family, "meaning": meaning, "added": added}
+
+
+def find_licence(root: Path) -> dict:
+    for name in LICENCE_FILES:
+        path = root / name
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        out = classify_licence(text)
+        out["file"] = name
+        return out
+    return {"file": None, "family": "none", "added": [],
+            "meaning": "no licence file: the author keeps all rights by default"}
+
+
 def weigh(root: Path) -> dict:
     lines: Counter = Counter()
     files: Counter = Counter()
@@ -207,6 +287,7 @@ def weigh(root: Path) -> dict:
     cls, reason = weight_class(lines["code"], lines["prose"], sum(files.values()))
     return {
         "root": str(root),
+        "licence": find_licence(root),
         "weight_class": cls,
         "weight_reason": reason,
         "lines": dict(lines),
@@ -223,7 +304,15 @@ def render(report: dict) -> str:
     files = report["files"]
     code, prose = lines.get("code", 0), lines.get("prose", 0)
     total_files = sum(files.values())
+    lic = report["licence"]
+    mark = "!! " if lic["family"] in LICENCE_BLOCKING else "   "
     out = [
+        f"{mark}licence  : {lic['family']} — {lic['meaning']}"
+        + (f" [{lic['file']}]" if lic["file"] else ""),
+    ]
+    for note in lic["added"]:
+        out.append(f"!!           + {note}")
+    out += [
         f"weight class : {report['weight_class']}  ({report['weight_reason']})",
         f"code         : {code} lines in {files.get('code', 0)} files",
         f"prose        : {prose} lines in {files.get('prose', 0)} files",
