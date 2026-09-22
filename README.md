@@ -67,6 +67,17 @@ Two teardowns of trending repos, run with this skill:
 Read them side by side. Near-identical prompt sizes, opposite architectures, and
 neither README tells you which one you are looking at.
 
+## A month of trending, measured
+
+[`data/trending-138.csv`](data/trending-138.csv) holds every unique repository that
+appeared in one month of a GitHub trending digest, 138 of them, each weighed with the
+script in this repo: 67 fork-class, 32 medium, 15 prompt-class, 9 small, 10 too large to
+fetch, 5 already removed from GitHub.
+
+56 percent are platform-scale. 24 are light enough to rebuild in an evening, and half of
+those are not tools at all. 35 carry no licence you can rely on. Method, column meanings
+and the limits of the sweep are in [`data/README.md`](data/README.md).
+
 ## Install
 
 **Claude Code**
