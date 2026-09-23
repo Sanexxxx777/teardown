@@ -66,13 +66,15 @@ reached people, nothing else.
 
 ## What did not survive measurement
 
-Five of these repositories were gone from GitHub within a day of being catalogued:
-miners, "free" builds of paid desktop software, resale of other people's subscriptions,
-proxy panels. They were flagged by eye first, from a three-part pattern: a fresh account,
-a name borrowing a famous product, and stars appearing faster than a repository can
-plausibly earn them. The removals suggest the judgement was sound, so the obvious next
-step was to mechanise the pattern. It does not mechanise. All three parts were tested
-against the repositories that are still up and the ones read in full:
+Ten of these repositories were flagged by eye before being opened, from a three-part
+pattern: a fresh account, a name borrowing a famous product, and stars appearing faster
+than a repository can plausibly earn them. Five of the ten were gone from GitHub within a
+day. Going by their names: a miner, "free" builds of Acrobat and Total Commander, an
+"optimizer", and a panel whose purpose was never seen. Reading the code of the five still
+up later cleared four of them as ordinary tools, so the eye was right about half the time.
+The obvious next step was still to try to mechanise the pattern. It does not mechanise.
+All three parts were tested against the repositories that are still up and the ones read
+in full:
 
 - **Stars per day: no separation.** 24 of 28 legitimate repositories grow faster than the
   slowest flagged one. The fastest riser in the whole set, at 3,243 stars a day, is a
